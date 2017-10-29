@@ -18,6 +18,10 @@ var Player = function(state, atlas, x, y, weaponType){
 
     Player.prototype.update = function(){
         Kiwi.GameObjects.Sprite.prototype.update.call(this);
+        if(state.downKey.isDown || state.leftKey.isDown || state.rightKey.isDown ||state.upKey.isDown){
+            if(!this.animation.getAnimation("move").isPlaying)
+                this.animation.play("move");
+        }
         if(state.downKey.isDown && !state.leftKey.isDown && !state.rightKey.isDown && !state.upKey.isDown){
             console.log("X");
             if(this.facing != "down"){

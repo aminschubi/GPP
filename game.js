@@ -16,6 +16,7 @@ myState.create = function(){
     this.rightKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.D);
     this.downKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.S);
     this.spaceKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.SPACEBAR);
+    this.cKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.C);
 
     this.player.animation.add("move", [0,1,2,3,4], 0.2, false);
     this.addChild(this.player);

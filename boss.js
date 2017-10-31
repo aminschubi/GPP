@@ -9,7 +9,7 @@ var Boss = function(state, atlas, x, y){
     this.angle;
     this.mid = new Kiwi.Geom.Point(this.transform.x + this.width/2, this.transform.y + this.height/2);
 
-    this.hb = new Kiwi.Geom.Circle(this.mid.x, this.mid.y, 300);
+    this.hb = new Kiwi.Geom.Circle(this.mid.x, this.mid.y, 200);
 
     Boss.prototype.attack = function(){
 

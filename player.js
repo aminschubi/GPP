@@ -31,7 +31,7 @@ var Player = function(state, atlas, x, y, weaponType){
         var point = new Kiwi.Geom.Point(x,y);
         var midBoss = state.boss.mid;
         var ray = new Kiwi.Geom.Line(this.mid.x, this.mid.y, this.mid.x+dx*100, this.mid.y+dy*100)
-        console.log(Kiwi.Geom.Intersect.circleContainsPoint(state.boss.hb,point).result);
+        console.log(Kiwi.Geom.Intersect.circleContainsPoint(state.boss.hb,point).result + "Point:"+point.x+","+point.y+"; Circle:"+state.boss.hb.x+","+state.boss.hb.y+","+state.boss.hb.diameter);
         if(Kiwi.Geom.Point.distanceBetween(this.mid, midBoss) < state.boss.height/2-20 && Kiwi.Geom.Intersect.circleContainsPoint(state.boss.hb,point).result == true){
             return true;
         }

@@ -3,7 +3,8 @@ var Player = function(state, atlas, x, y, weaponType){
 
     this.box.hitbox = new Kiwi.Geom.Rectangle(0, 0, 40, 40 );    
 
-    this.hp = 100;
+    this.maxHP = 1000;
+    this.hp = 1000;
     this.facing = "up";
     this.cPressed = false;
     this.spacePressed = false;
@@ -23,16 +24,16 @@ var Player = function(state, atlas, x, y, weaponType){
         this.movespeedfactor = 0.8;
     //#endregion
     Player.prototype.wouldCollide = function(dx, dy){
-        var x = this.transform.x + dx*20;
-        var y = this.transform.y + dy*20;
-        var angle = this.rotation;
-        var rotatedX = Math.cos(-angle) * (x - this.transform.x) - Math.sin(-angle) * (y - this.transform.y) + this.transform.x;
-        var rotatedY = Math.sin(-angle) * (x - this.transform.x) - Math.cos(-angle) * (y - this.transform.y) + this.transform.y;
-        var point = new Kiwi.Geom.Point(x,y);
-        var midBoss = state.boss.mid;
-        var ray = new Kiwi.Geom.Line(this.mid.x, this.mid.y, this.mid.x+dx*100, this.mid.y+dy*100)
-        console.log(Kiwi.Geom.Intersect.circleContainsPoint(state.boss.hb,point).result + "Point:"+point.x+","+point.y+"; Circle:"+state.boss.hb.x+","+state.boss.hb.y+","+state.boss.hb.diameter);
-        if(Kiwi.Geom.Point.distanceBetween(this.mid, midBoss) < state.boss.height/2-20 && Kiwi.Geom.Intersect.circleContainsPoint(state.boss.hb,point).result == true){
+        console.log((Kiwi.Utils.GameMath.radiansToDegrees(this.rotation)));
+        if(Kiwi.Geom.Point.distanceBetween(this.mid, state.boss.mid) < state.boss.height/2 
+            && ((Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 90 && state.boss.mid.x > this.mid.x && Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x + 30, this.mid.y), state.boss.mid) < state.boss.height/2-40) 
+            || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 180 && state.boss.mid.y > this.mid.y && Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x, this.mid.y + 30), state.boss.mid) < state.boss.height/2-40)
+            || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 270 && state.boss.mid.x < this.mid.x && Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x - 30, this.mid.y), state.boss.mid) < state.boss.height/2-40) 
+            || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 0 && state.boss.mid.y < this.mid.y && Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x, this.mid.y - 30), state.boss.mid) < state.boss.height/2-40)
+            || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 225 && state.boss.mid.y > this.mid.y && state.boss.mid.x < this.mid.x)
+            || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 135 && state.boss.mid.y > this.mid.y && state.boss.mid.x > this.mid.x)
+            || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 45 && state.boss.mid.y < this.mid.y && state.boss.mid.x > this.mid.x)
+            || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 315 && state.boss.mid.y < this.mid.y && state.boss.mid.x < this.mid.x))){
             return true;
         }
         else{
@@ -170,8 +171,19 @@ var Player = function(state, atlas, x, y, weaponType){
             console.log("hit");
             this.spacePressed = true;
             this.animation.stop();
-            if(this.attackHitbox.hitbox.intersects(state.boss.box.hitbox))
+            //Check if Enemy is hit
+            if(Kiwi.Geom.Point.distanceBetween(this.mid, state.boss.mid) < state.boss.height/2 
+            && ((Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 90 && state.boss.mid.x > this.mid.x ) 
+            || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 180 && state.boss.mid.y > this.mid.y )
+            || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 270 && state.boss.mid.x < this.mid.x ) 
+            || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 0 && state.boss.mid.y < this.mid.y )
+            || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 225 && state.boss.mid.y > this.mid.y && state.boss.mid.x < this.mid.x)
+            || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 135 && state.boss.mid.y > this.mid.y && state.boss.mid.x > this.mid.x)
+            || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 45 && state.boss.mid.y < this.mid.y && state.boss.mid.x > this.mid.x)
+            || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 315 && state.boss.mid.y < this.mid.y && state.boss.mid.x < this.mid.x))){
                 console.log("collision");
+                state.boss.hp -= 100;
+            }
             this.animation.play("hit");
         }
         else if(this.spacePressed && state.spaceKey.isUp && !this.animation.getAnimation("hit").isPlaying)

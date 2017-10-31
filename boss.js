@@ -1,7 +1,10 @@
 var Boss = function(state, atlas, x, y){
     Kiwi.GameObjects.Sprite.call(this,state, atlas, x, y, [enableInput=false]);
-   
+
     var player = state.player;
+
+    this.hp = 10000;
+    this.maxHP = 10000;
     this.relocate = true;
     this.actualRot;
     this.playerActPos;
@@ -9,10 +12,8 @@ var Boss = function(state, atlas, x, y){
     this.angle;
     this.mid = new Kiwi.Geom.Point(this.transform.x + this.width/2, this.transform.y + this.height/2);
 
-    this.hb = new Kiwi.Geom.Circle(this.mid.x, this.mid.y, 200);
-
     Boss.prototype.attack = function(){
-
+        
     }
 
     Boss.prototype.moveTowardsEnemy = function(){
@@ -23,17 +24,12 @@ var Boss = function(state, atlas, x, y){
         var rotatedY = Math.sin(-angle) * (x - this.transform.x) - Math.cos(-angle) * (y - this.transform.y) + this.transform.y;
         this.mid.x += rotatedX - this.transform.x;
         this.mid.y += rotatedY - this.transform.y;
-        this.hb.x = this.mid.x;
-        this.hb.y = this.mid.y;
         this.transform.setPosition(rotatedX, rotatedY);
     }
 
     Boss.prototype.update = function(){
         Kiwi.GameObjects.Sprite.prototype.update.call(this);
         var boss = this;
-        //console.log(this.hb);
-        //console.log(this.mid.x+"  "+this.mid.y)
-        //this.mid = new Kiwi.Geom.Point(this.mid.x, this.y+this.rotPointY);
         //Relocate Boss(Rotation and Movement)
         if(this.relocate){
             console.log("Rerotate!");
@@ -75,9 +71,6 @@ var Boss = function(state, atlas, x, y){
                 this.rotation = Kiwi.Utils.GameMath.degreesToRadians(359);
 
             if(Math.floor(Kiwi.Utils.GameMath.radiansToDegrees(this.rotation)) == this.angle){
-//console.log(Kiwi.Geom.Point.distanceBetween(this.mid, player.mid));
-//console.log(player.mid);
-//console.log(this.mid);
                 if(Kiwi.Geom.Point.distanceBetween(this.mid, player.mid) > this.height/2-20){
                     this.moveTowardsEnemy();
                     if(!this.animation.getAnimation("move").isPlaying)
@@ -104,14 +97,14 @@ var Boss = function(state, atlas, x, y){
                 }
                 //console.log("-Alpha: "+negAngle+", +Alpha: "+posAngle);
                 if(negAngle < posAngle){
-                    this.rotation -= Kiwi.Utils.GameMath.degreesToRadians(0.75);
+                    this.rotation -= Kiwi.Utils.GameMath.degreesToRadians(1);
                     if(!this.animation.getAnimation("move").isPlaying)
                         this.animation.play("move");
                     if(Math.floor(Kiwi.Utils.GameMath.radiansToDegrees(this.rotation)) == 0)
                         this.rotation = Kiwi.Utils.GameMath.degreesToRadians(359);
                 }
                 else{
-                    this.rotation += Kiwi.Utils.GameMath.degreesToRadians(0.75);
+                    this.rotation += Kiwi.Utils.GameMath.degreesToRadians(1);
                     if(!this.animation.getAnimation("move").isPlaying)
                         this.animation.play("move");
                     if(this.rotation >= 2*Math.PI){

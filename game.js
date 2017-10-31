@@ -3,8 +3,8 @@ var myState = new Kiwi.State("myState");
 
 myState.preload = function () {
     Kiwi.State.prototype.preload.call(this);
-    this.addSpriteSheet("hammerSprite", "img/hammerhit.png", 208,208);
-    this.addSpriteSheet("boss", "img/bossSpriteSheet.png", 500, 450);
+    this.addSpriteSheet("hammerSprite", "img/hammerhit.png", 130,130);
+    this.addSpriteSheet("boss", "img/bossSpriteSheet.png", 260, 253);
     this.addImage("bg", "img/bg.png");
 }
 
@@ -25,7 +25,9 @@ myState.create = function(){
 
     this.player.animation.add("move", [0,1,2,3,4], 0.1, false);
     this.player.animation.add("hit", [5,6,7,8,9,10,11,12,13,14,15,16], 0.05, false);
+    this.boss.animation.add("idle", [0], 0.1, false);
     this.boss.animation.add("move", [1,2], 0.4, false);
+    this.boss.animation.add("attack", [0,3,4], 0.3, false);
     this.addChild(this.bg);
     this.addChild(this.boss);
     this.addChild(this.player);
@@ -33,10 +35,7 @@ myState.create = function(){
 
 myState.update = function() {
        Kiwi.State.prototype.update.call(this);
-
 }
-
-
 
 myGame.states.addState(myState);
 myGame.states.switchState("myState");

@@ -9,11 +9,7 @@ var Boss = function(state, atlas, x, y){
     this.angle;
     this.mid = new Kiwi.Geom.Point(this.transform.x + this.width/2, this.transform.y + this.height/2);
 
-    var hb = new Kiwi.Geom.Circle(this.mid.x, this.mid.y, 300);
-    this.getHB = function(){
-        return hb;
-    }
-
+    this.hb = new Kiwi.Geom.Circle(this.mid.x, this.mid.y, 300);
 
     Boss.prototype.attack = function(){
 
@@ -27,15 +23,15 @@ var Boss = function(state, atlas, x, y){
         var rotatedY = Math.sin(-angle) * (x - this.transform.x) - Math.cos(-angle) * (y - this.transform.y) + this.transform.y;
         this.mid.x += rotatedX - this.transform.x;
         this.mid.y += rotatedY - this.transform.y;
-        hb.x = this.mid.x;
-        hb.y = this.mid.y;
+        this.hb.x = this.mid.x;
+        this.hb.y = this.mid.y;
         this.transform.setPosition(rotatedX, rotatedY);
     }
 
     Boss.prototype.update = function(){
         Kiwi.GameObjects.Sprite.prototype.update.call(this);
         var boss = this;
-        //console.log(hb);
+        //console.log(this.hb);
         //console.log(this.mid.x+"  "+this.mid.y)
         //this.mid = new Kiwi.Geom.Point(this.mid.x, this.y+this.rotPointY);
         //Relocate Boss(Rotation and Movement)

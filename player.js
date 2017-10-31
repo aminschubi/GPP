@@ -23,16 +23,16 @@ var Player = function(state, atlas, x, y, weaponType){
         this.movespeedfactor = 0.8;
     //#endregion
     Player.prototype.wouldCollide = function(dx, dy){
-        var x = this.transform.x + dx;
-        var y = this.transform.y + dy;
+        var x = this.transform.x + dx*20;
+        var y = this.transform.y + dy*20;
         var angle = this.rotation;
         var rotatedX = Math.cos(-angle) * (x - this.transform.x) - Math.sin(-angle) * (y - this.transform.y) + this.transform.x;
         var rotatedY = Math.sin(-angle) * (x - this.transform.x) - Math.cos(-angle) * (y - this.transform.y) + this.transform.y;
         var point = new Kiwi.Geom.Point(x,y);
         var midBoss = state.boss.mid;
         var ray = new Kiwi.Geom.Line(this.mid.x, this.mid.y, this.mid.x+dx*100, this.mid.y+dy*100)
-        console.log(Kiwi.Geom.Intersect.circleContainsPoint(state.boss.getHB(),point).result);
-        if(Kiwi.Geom.Point.distanceBetween(this.mid, midBoss) < state.boss.height/2-20 && Kiwi.Geom.Intersect.circleContainsPoint(state.boss.getHB(),point).result == true){
+        console.log(Kiwi.Geom.Intersect.circleContainsPoint(state.boss.hb,point).result);
+        if(Kiwi.Geom.Point.distanceBetween(this.mid, midBoss) < state.boss.height/2-20 && Kiwi.Geom.Intersect.circleContainsPoint(state.boss.hb,point).result == true){
             return true;
         }
         else{

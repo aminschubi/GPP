@@ -10,6 +10,7 @@ var Player = function(state, atlas, x, y, weaponType){
     this.spacePressed = false;
     this.mid = new Kiwi.Geom.Point(this.x + this.width/2, this.y + this.height/2);
     this.dodged = false;
+    this.attackable = true;
 
     this.attackHitbox = new Kiwi.Components.Box(this,0,30,30,30);
 

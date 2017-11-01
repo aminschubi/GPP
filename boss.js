@@ -13,7 +13,17 @@ var Boss = function(state, atlas, x, y){
     this.mid = new Kiwi.Geom.Point(this.transform.x + this.width/2, this.transform.y + this.height/2);
 
     Boss.prototype.attack = function(){
-        
+        var b = this;
+        var hpBefore = player.hp;
+        var timer = state.clock.createTimer( "checkDistance", 0.75 );
+        timer.createTimerEvent( Kiwi.Time.TimerEvent.TIMER_STOP,
+            function() {
+                if(Kiwi.Geom.Point.distanceBetween(b.mid, b.mid) <= b.height/2-20 && Math.floor(Kiwi.Utils.GameMath.radiansToDegrees(b.rotation)) == b.angle && b.animation.currentCell == 4 && player.hp == hpBefore)
+                    player.hp -= 200;
+                state.clock.removeTimer(timer);
+            }
+        );
+        timer.start();
     }
 
     Boss.prototype.moveTowardsEnemy = function(){

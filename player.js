@@ -9,6 +9,7 @@ var Player = function(state, atlas, x, y, weaponType){
     this.cPressed = false;
     this.spacePressed = false;
     this.mid = new Kiwi.Geom.Point(this.x + this.width/2, this.y + this.height/2);
+    this.dodged = false;
 
     this.attackHitbox = new Kiwi.Components.Box(this,0,30,30,30);
 
@@ -42,14 +43,73 @@ var Player = function(state, atlas, x, y, weaponType){
     }
 
     Player.prototype.dodge = function(){
-        var x = this.transform.x;
-        var y = this.transform.y + 75;
-        var angle = this.rotation;
-        var rotatedX = Math.cos(-angle) * (x - this.transform.x) - Math.sin(-angle) * (y - this.transform.y) + this.transform.x;
-        var rotatedY = Math.sin(-angle) * (x - this.transform.x) - Math.cos(-angle) * (y - this.transform.y) + this.transform.y;
-        this.mid.x += rotatedX - this.transform.x;
-        this.mid.y += rotatedY - this.transform.y;
-        this.transform.setPosition(rotatedX, rotatedY);
+        var p = this;
+        this.dodged = true;
+        if(!this.animation.getAnimation("dodge").isPlaying)
+            this.animation.stop();
+        this.animation.play("dodge");
+        var timer = state.clock.createTimer( "moveTimer", 0.1 );
+        timer.createTimerEvent( Kiwi.Time.TimerEvent.TIMER_STOP,
+            function() {
+                console.log( "Dodge!" );
+                switch(Kiwi.Utils.GameMath.radiansToDegrees(p.rotation)){
+                    case 0:
+                        p.transform.y -= 75;
+                        p.mid.y -= 75;
+                        break;
+                    case 45:
+                        p.transform.x += 75;
+                        p.mid.x += 75;
+                        p.transform.y -= 75;
+                        p.mid.y -= 75;
+                        break;
+                    case 90:
+                        p.transform.x += 75;
+                        p.mid.x += 75;
+                        break;
+                    case 135:
+                        p.transform.x += 75;
+                        p.mid.x += 75;
+                        p.transform.y += 75;
+                        p.mid.y += 75;
+                        break;
+                    case 180:
+                        p.transform.y += 75;
+                        p.mid.y += 75;
+                        break;
+                    case 225:
+                        p.transform.x -= 75;
+                        p.mid.x -= 75;
+                        p.transform.y += 75;
+                        p.mid.y += 75;
+                        break;
+                    case 270:
+                        p.transform.x -= 75;
+                        p.mid.x -= 75;
+                        break;
+                    case 315:
+                        p.transform.x -= 75;
+                        p.mid.x -= 75;
+                        p.transform.y -= 75;
+                        p.mid.y -= 75;
+                        break;
+                }
+                //p.transform.setPosition(rotatedX, rotatedY);
+                state.clock.removeTimer(timer );
+            }
+        );
+
+        var timer2 = state.clock.createTimer( "dodgeCD", 2 );
+        timer2.createTimerEvent( Kiwi.Time.TimerEvent.TIMER_STOP,
+            function() {
+                console.log( "Dodge!" );
+                p.dodged = false;
+                state.clock.removeTimer(timer2);
+            }
+        );
+        timer.start();
+        timer2.start();
+        
     }
 
     Player.prototype.update = function(){
@@ -63,14 +123,15 @@ var Player = function(state, atlas, x, y, weaponType){
         && !(state.downKey.isDown && !state.leftKey.isDown && !state.rightKey.isDown && state.upKey.isDown)
         && !(state.downKey.isDown && state.leftKey.isDown && !state.rightKey.isDown && state.upKey.isDown)
         && !(state.downKey.isDown && !state.leftKey.isDown && state.rightKey.isDown && state.upKey.isDown)
-        && !this.animation.getAnimation("hit").isPlaying)
+        && !this.animation.getAnimation("hit").isPlaying
+        && !this.animation.getAnimation("dodge").isPlaying)
         {
             if(!this.animation.getAnimation("move").isPlaying)
                 this.animation.play("move");
         }
         //#endregion
         //Check if Hit is being executed
-        if(!this.animation.getAnimation("hit").isPlaying){
+        if(!this.animation.getAnimation("hit").isPlaying && !this.animation.getAnimation("dodge").isPlaying){
             //Down
             if(state.downKey.isDown && !state.leftKey.isDown && !state.rightKey.isDown && !state.upKey.isDown){
                 if(this.rotation != Kiwi.Utils.GameMath.degreesToRadians(180)){
@@ -190,7 +251,7 @@ var Player = function(state, atlas, x, y, weaponType){
             this.spacePressed = false;
 
         //Check if Dodge is still pressed
-        if(!this.cPressed && state.cKey.isDown && !this.animation.getAnimation("hit").isPlaying){
+        if(!this.cPressed && state.cKey.isDown && !this.animation.getAnimation("hit").isPlaying && !this.dodged){
             this.cPressed = true;
             this.dodge();
         }

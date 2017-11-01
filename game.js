@@ -19,6 +19,7 @@ myState.create = function(){
     this.player = new Player(this, this.textures.hammerSprite, 300, 300,2);
     this.player.animation.add("move", [0,1,2,3,4], 0.1, false);
     this.player.animation.add("hit", [5,6,7,8,9,10,11,12,13,14,15,16], 0.05, false);
+    this.player.animation.add("dodge", [16,17,18,19,20,21,16],0.03,false);
 
     this.boss = new Boss(this, this.textures.boss, 500, 474);
     this.boss.animation.add("idle", [0], 0.1, false);

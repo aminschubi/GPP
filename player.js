@@ -3,14 +3,16 @@ var Player = function(state, atlas, x, y, weaponType){
 
     this.box.hitbox = new Kiwi.Geom.Rectangle(0, 0, 40, 40 );    
 
-    this.maxHP = 1000;
-    this.hp = 1000;
+    this.maxHP = 100;
+    this.hp = 100;
     this.facing = "up";
     this.cPressed = false;
     this.spacePressed = false;
     this.mid = new Kiwi.Geom.Point(this.x + this.width/2, this.y + this.height/2);
     this.dodged = false;
     this.attackable = true;
+    this.dodgeClock = Date.now()-2000;
+    this.actualTime = Date.now();
 
     this.attackHitbox = new Kiwi.Components.Box(this,0,30,30,30);
 
@@ -27,7 +29,7 @@ var Player = function(state, atlas, x, y, weaponType){
     //#endregion
     Player.prototype.wouldCollide = function(dx, dy){
         console.log((Kiwi.Utils.GameMath.radiansToDegrees(this.rotation)));
-        if(Kiwi.Geom.Point.distanceBetween(this.mid, state.boss.mid) < state.boss.height/2 
+        if(Kiwi.Geom.Point.distanceBetween(this.mid, state.boss.mid) < state.boss.height/2-20
             && ((Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 90 && state.boss.mid.x > this.mid.x && Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x + 30, this.mid.y), state.boss.mid) < state.boss.height/2-40) 
             || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 180 && state.boss.mid.y > this.mid.y && Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x, this.mid.y + 30), state.boss.mid) < state.boss.height/2-40)
             || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 270 && state.boss.mid.x < this.mid.x && Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x - 30, this.mid.y), state.boss.mid) < state.boss.height/2-40) 
@@ -49,6 +51,7 @@ var Player = function(state, atlas, x, y, weaponType){
         if(!this.animation.getAnimation("dodge").isPlaying)
             this.animation.stop();
         this.animation.play("dodge");
+        state.playerAttack.visible = false;
         var timer = state.clock.createTimer( "moveTimer", 0.1 );
         timer.createTimerEvent( Kiwi.Time.TimerEvent.TIMER_STOP,
             function() {
@@ -100,21 +103,25 @@ var Player = function(state, atlas, x, y, weaponType){
             }
         );
 
-        var timer2 = state.clock.createTimer( "dodgeCD", 2 );
-        timer2.createTimerEvent( Kiwi.Time.TimerEvent.TIMER_STOP,
+        this.dodgeClock = Date.now();
+        var dodgeTimer = state.clock.createTimer( "dodgeCD", 2 );
+        dodgeTimer.createTimerEvent( Kiwi.Time.TimerEvent.TIMER_STOP,
             function() {
                 console.log( "Dodge!" );
                 p.dodged = false;
-                state.clock.removeTimer(timer2);
+                state.clock.removeTimer(dodgeTimer);
             }
         );
         timer.start();
-        timer2.start();
+        dodgeTimer.start();
         
     }
 
     Player.prototype.update = function(){
         Kiwi.GameObjects.Sprite.prototype.update.call(this);
+
+        this.actualTime = Date.now();
+
         //#region Loop Animation right
         if((state.downKey.isDown || state.leftKey.isDown || state.rightKey.isDown ||state.upKey.isDown) 
         && !(!state.downKey.isDown && state.leftKey.isDown && state.rightKey.isDown && !state.upKey.isDown)
@@ -129,6 +136,7 @@ var Player = function(state, atlas, x, y, weaponType){
         {
             if(!this.animation.getAnimation("move").isPlaying)
                 this.animation.play("move");
+            state.playerAttack.visible = false;
         }
         //#endregion
         //Check if Hit is being executed
@@ -138,7 +146,7 @@ var Player = function(state, atlas, x, y, weaponType){
                 if(this.rotation != Kiwi.Utils.GameMath.degreesToRadians(180)){
                     this.rotation = Kiwi.Utils.GameMath.degreesToRadians(180);
                 }
-                if(!this.wouldCollide(0, 4)){
+                if(!this.wouldCollide(0, 4) && this.mid.y+4.0*this.movespeedfactor < 1080-this.width/2){
                     this.transform.y += 4.0*this.movespeedfactor;
                     this.mid.y += 4.0*this.movespeedfactor;
                 }
@@ -148,7 +156,7 @@ var Player = function(state, atlas, x, y, weaponType){
                 if(this.rotation != Kiwi.Utils.GameMath.degreesToRadians(225)){
                     this.rotation = Kiwi.Utils.GameMath.degreesToRadians(225);
                 }
-                if(!this.wouldCollide(-3, 3)){
+                if(!this.wouldCollide(-3, 3)  && this.mid.y+3.0*this.movespeedfactor < 1080-this.height/2 && this.mid.x - 3.0*this.movespeedfactor > 0+this.width/2){
                     this.transform.y += 3.0*this.movespeedfactor;
                     this.transform.x -= 3.0*this.movespeedfactor;
                     this.mid.y += 3.0*this.movespeedfactor;
@@ -161,7 +169,7 @@ var Player = function(state, atlas, x, y, weaponType){
                     this.facing = "downright";
                     this.rotation = Kiwi.Utils.GameMath.degreesToRadians(135);
                 }
-                if(!this.wouldCollide(3, 3)){
+                if(!this.wouldCollide(3, 3) && this.mid.y+3.0*this.movespeedfactor < 1080-this.height/2 && this.mid.x + 3.0*this.movespeedfactor < 1920-this.width/2){
                     this.transform.y += 3.0*this.movespeedfactor;
                     this.transform.x += 3.0*this.movespeedfactor;
                     this.mid.y += 3.0*this.movespeedfactor;
@@ -175,7 +183,7 @@ var Player = function(state, atlas, x, y, weaponType){
                 if(this.rotation != 0){
                     this.rotation = 0;
                 }
-                if(!this.wouldCollide(0, -4)){
+                if(!this.wouldCollide(0, -4) && this.mid.y+4.0*this.movespeedfactor > 0+this.height/2){
                     this.transform.y -= 4.0*this.movespeedfactor;
                     this.mid.y -= 4.0*this.movespeedfactor;
                 }
@@ -185,7 +193,7 @@ var Player = function(state, atlas, x, y, weaponType){
                 if(this.rotation != Kiwi.Utils.GameMath.degreesToRadians(315)){
                     this.rotation = Kiwi.Utils.GameMath.degreesToRadians(315);
                 }
-                if(!this.wouldCollide(-3, -3)){
+                if(!this.wouldCollide(-3, -3) && this.mid.y-3.0*this.movespeedfactor > 0+this.height/2 && this.mid.x - 3.0*this.movespeedfactor > 0+this.width/2){
                     this.transform.y -= 3.0*this.movespeedfactor;
                     this.transform.x -= 3.0*this.movespeedfactor;
                     this.mid.y -= 3.0*this.movespeedfactor;
@@ -197,7 +205,7 @@ var Player = function(state, atlas, x, y, weaponType){
                 if(this.rotation != Kiwi.Utils.GameMath.degreesToRadians(45)){
                     this.rotation = Kiwi.Utils.GameMath.degreesToRadians(45);
                 }
-                if(!this.wouldCollide(3, -3)){
+                if(!this.wouldCollide(3, -3)&& this.mid.y-3.0*this.movespeedfactor > 0+this.height/2 && this.mid.x + 3.0*this.movespeedfactor < 1920-this.width/2){
                     this.transform.y -= 3.0*this.movespeedfactor;
                     this.transform.x += 3.0*this.movespeedfactor;
                     this.mid.y -= 3.0*this.movespeedfactor;
@@ -209,7 +217,7 @@ var Player = function(state, atlas, x, y, weaponType){
                 if(this.rotation != Kiwi.Utils.GameMath.degreesToRadians(90)){
                     this.rotation = Kiwi.Utils.GameMath.degreesToRadians(90);
                 }
-                if(!this.wouldCollide(4, 0)){
+                if(!this.wouldCollide(4, 0) && this.mid.x +4.0*this.movespeedfactor < 1920-this.width/2){
                     this.transform.x += 4.0*this.movespeedfactor;
                     this.mid.x += 4.0*this.movespeedfactor;
                 }
@@ -219,7 +227,7 @@ var Player = function(state, atlas, x, y, weaponType){
                 if(this.rotation != Kiwi.Utils.GameMath.degreesToRadians(270)){
                     this.rotation = Kiwi.Utils.GameMath.degreesToRadians(270);
                 }
-                if(!this.wouldCollide(-4, 0)){
+                if(!this.wouldCollide(-4, 0) && this.mid.x - 4.0*this.movespeedfactor > 0+this.width/2){
                     this.transform.x -= 4.0*this.movespeedfactor;
                     this.mid.x -= 4.0*this.movespeedfactor;
                 }
@@ -234,7 +242,7 @@ var Player = function(state, atlas, x, y, weaponType){
             this.spacePressed = true;
             this.animation.stop();
             //Check if Enemy is hit
-            if(Kiwi.Geom.Point.distanceBetween(this.mid, state.boss.mid) < state.boss.height/2 
+            if(Kiwi.Geom.Point.distanceBetween(this.mid, state.boss.mid) < state.boss.height/2+20 
             && ((Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 90 && state.boss.mid.x > this.mid.x ) 
             || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 180 && state.boss.mid.y > this.mid.y )
             || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 270 && state.boss.mid.x < this.mid.x ) 
@@ -244,7 +252,24 @@ var Player = function(state, atlas, x, y, weaponType){
             || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 45 && state.boss.mid.y < this.mid.y && state.boss.mid.x > this.mid.x)
             || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 315 && state.boss.mid.y < this.mid.y && state.boss.mid.x < this.mid.x))){
                 console.log("collision");
-                state.boss.hp -= 100;
+                state.boss.hp -= 250;
+                state.playerAttack.text = "-250";
+                var timer = state.clock.createTimer( "removeDMG", 0.4 );
+                timer.createTimerEvent( Kiwi.Time.TimerEvent.TIMER_STOP,
+                    function() {
+                        state.playerAttack.visible = true;
+                        state.clock.removeTimer(timer);
+                    }
+                );
+                timer.start();
+                var timer2 = state.clock.createTimer( "removeDMG", 1 );
+                timer2.createTimerEvent( Kiwi.Time.TimerEvent.TIMER_STOP,
+                    function() {
+                        state.playerAttack.visible = false;
+                        state.clock.removeTimer(timer2);
+                    }
+                );
+                timer2.start();
             }
             this.animation.play("hit");
         }
@@ -252,9 +277,18 @@ var Player = function(state, atlas, x, y, weaponType){
             this.spacePressed = false;
 
         //Check if Dodge is still pressed
-        if(!this.cPressed && state.cKey.isDown && !this.animation.getAnimation("hit").isPlaying && !this.dodged){
-            this.cPressed = true;
-            this.dodge();
+        if(!this.cPressed && state.cKey.isDown && !this.animation.getAnimation("hit").isPlaying && !this.dodged
+            && !((state.boss.box.hitbox.containsPoint(new Kiwi.Geom.Point(this.mid.x,this.mid.y-75)) && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 0)
+            || (state.boss.box.hitbox.containsPoint(new Kiwi.Geom.Point(this.mid.x+75,this.mid.y-75)) && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 45)
+            || (state.boss.box.hitbox.containsPoint(new Kiwi.Geom.Point(this.mid.x+75,this.mid.y)) && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 90)
+            || (state.boss.box.hitbox.containsPoint(new Kiwi.Geom.Point(this.mid.x+75,this.mid.y+75)) && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 135)
+            || (state.boss.box.hitbox.containsPoint(new Kiwi.Geom.Point(this.mid.x,this.mid.y+75)) && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 180)
+            || (state.boss.box.hitbox.containsPoint(new Kiwi.Geom.Point(this.mid.x-75,this.mid.y+75)) && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 225)
+            || (state.boss.box.hitbox.containsPoint(new Kiwi.Geom.Point(this.mid.x-75,this.mid.y)) && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 270)
+            || (state.boss.box.hitbox.containsPoint(new Kiwi.Geom.Point(this.mid.x-75,this.mid.y-75)) && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 315))){
+                
+                this.cPressed = true;
+                this.dodge();
         }
         else if(this.cPressed && state.cKey.isUp)
             this.cPressed = false;

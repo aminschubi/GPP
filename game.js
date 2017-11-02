@@ -27,7 +27,7 @@ myState.create = function(){
     this.boss = new Boss(this, this.textures.boss, 500, 474);
     this.boss.animation.add("idle", [0], 0.1, false);
     this.boss.animation.add("move", [1,2], 0.2, false);
-    this.boss.animation.add("attack", [0,3,4], 0.3, false);
+    this.boss.animation.add("attack", [0,3,4], 0.2, false);
 
     this.upKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.UP);
     this.leftKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.LEFT);

@@ -3,8 +3,8 @@ var Boss = function(state, atlas, x, y){
 
     var player = state.player;
 
-    this.hp = 10000;
-    this.maxHP = 10000;
+    this.hp = 5000;
+    this.maxHP = 5000;
     this.relocate = true;
     this.actualRot;
     this.playerActPos;
@@ -16,7 +16,7 @@ var Boss = function(state, atlas, x, y){
         var b = this;
         var hpBefore = player.hp;
         state.bossAttack.text = "-20";
-        var timer = state.clock.createTimer( "checkDistance", 0.75 );
+        var timer = state.clock.createTimer( "checkDistance", 0.5 );
         timer.createTimerEvent( Kiwi.Time.TimerEvent.TIMER_STOP,
             function() {
                 if(Kiwi.Geom.Point.distanceBetween(b.mid, b.mid) <= b.height/2-20 && Math.floor(Kiwi.Utils.GameMath.radiansToDegrees(b.rotation)) == b.angle && b.animation.currentCell == 4 && player.hp == hpBefore){
@@ -62,7 +62,7 @@ var Boss = function(state, atlas, x, y){
             this.position.x += this.width/2;
             this.position.y += this.height/2;
 
-            this.angle = Kiwi.Utils.GameMath.radiansToDegrees(this.position.angleTo(this.playerActPos));
+            this.angle = Kiwi.Utils.GameMath.radiansToDegrees(this.mid.angleTo(player.mid));
             if(this.angle < 0)
                 this.angle += 360;
 
@@ -119,14 +119,14 @@ var Boss = function(state, atlas, x, y){
                 }
                 //console.log("-Alpha: "+negAngle+", +Alpha: "+posAngle);
                 if(negAngle < posAngle){
-                    this.rotation -= Kiwi.Utils.GameMath.degreesToRadians(1);
+                    this.rotation -= Kiwi.Utils.GameMath.degreesToRadians(1.25);
                     if(!this.animation.getAnimation("move").isPlaying)
                         this.animation.play("move");
                     if(Math.floor(Kiwi.Utils.GameMath.radiansToDegrees(this.rotation)) == 0)
                         this.rotation = Kiwi.Utils.GameMath.degreesToRadians(359);
                 }
                 else{
-                    this.rotation += Kiwi.Utils.GameMath.degreesToRadians(1);
+                    this.rotation += Kiwi.Utils.GameMath.degreesToRadians(1.25);
                     if(!this.animation.getAnimation("move").isPlaying)
                         this.animation.play("move");
                     if(this.rotation >= 2*Math.PI){

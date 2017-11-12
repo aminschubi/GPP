@@ -5,8 +5,10 @@ var myState = new Kiwi.State("myState");
 myState.preload = function () {
     Kiwi.State.prototype.preload.call(this);
     this.addSpriteSheet("hammerSprite", "img/hammerhit.png", 130,130);
-    this.addSpriteSheet("boss", "img/bossSpriteSheet.png", 260, 253);
+    this.addSpriteSheet("boss", "img/bossSpriteSheet.png", 286, 284);
     this.addImage("bg", "img/bg.png");
+    this.addImage("gameOver", "img/go.png");
+    this.addImage("gG", "img/gg.png");
 }
 
 myState.create = function(){
@@ -18,16 +20,23 @@ myState.create = function(){
     this.gameOver = false;
 
     this.bg = new Kiwi.GameObjects.Sprite(this, this.textures.bg, 0,0);
+    this.gameO = new Kiwi.GameObjects.Sprite(this, this.textures.gameOver, 0,0);
+    this.gG = new Kiwi.GameObjects.Sprite(this, this.textures.gG, 0,0);
 
     this.player = new Player(this, this.textures.hammerSprite, 300, 300,2);
+    this.player.transform.scale = 0.75;
     this.player.animation.add("move", [0,1,2,3,4], 0.1, false);
     this.player.animation.add("hit", [5,6,7,8,9,10,11,12,13,14,15,16], 0.05, false);
     this.player.animation.add("dodge", [16,17,18,19,20,21,16],0.01,false);
 
     this.boss = new Boss(this, this.textures.boss, 500, 474);
+    this.boss.transform.scale = 1.5;
     this.boss.animation.add("idle", [0], 0.1, false);
     this.boss.animation.add("move", [1,2], 0.2, false);
     this.boss.animation.add("attack", [0,3,4], 0.2, false);
+    this.boss.animation.add("openClaws", [3,5], 0.3, false);
+    this.boss.animation.add("chargeSP", [6,7,8], 0.5, false);
+    this.boss.animation.add("discharge", [8,9,10,11,12], 0.1, false);
 
     this.upKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.UP);
     this.leftKey = this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.LEFT);
@@ -64,12 +73,7 @@ myState.create = function(){
     this.hpB.fontSize = 60;
     this.hpB.fontWeight = "bold";
 
-    this.endTF = new Kiwi.GameObjects.TextField(this, "",1920/2 - 450,1080/2-100, "#ffffff");
-    this.endTF.fontFamily = "Wt-Position Mono";
-    this.endTF.fontSize = 120;
-    this.endTF.fontWeight = "bold";
-
-    this.endTF2 = new Kiwi.GameObjects.TextField(this, "",1920/2 - 550,1080/2+20, "#ffffff");
+    this.endTF2 = new Kiwi.GameObjects.TextField(this, "",1920/2 - 450,1080/2+400, "#ffffff");
     this.endTF2.fontFamily = "Wt-Position Mono";
     this.endTF2.fontSize = 120;
     this.endTF2.fontWeight = "bold";
@@ -88,10 +92,11 @@ myState.update = function() {
        Kiwi.State.prototype.update.call(this);
        this.updateHUD();
        this.checkEnd();
-       if(this.gameOver && this.spaceKey.isDown){
+       if(this.gameOver && this.cKey.isDown){
            this.destroy(true);
            this.create();
-           this.clock.resume();
+           this.boss.clock.start();
+           this.player.clock.start();
        }
 }
 
@@ -102,27 +107,27 @@ myState.updateHUD = function(){
     this.playerAttack.y = this.calcRotationPoint().y;
     this.bossAttack.x = this.player.mid.x-20;
     this.bossAttack.y = this.player.mid.y-20;
-    if(this.player.actualTime-this.player.dodgeClock < 2001)
-        this.dodgeCD.text = "Dodge-Cooldown:"+(Math.round(((this.player.actualTime-this.player.dodgeClock)/1000) * 100) / 100)+"/2 Seconds";
+    if(this.player.actualTime-this.player.dodgeClock < 10001)
+        this.dodgeCD.text = "Dodge-Cooldown:"+(Math.round(((this.player.actualTime-this.player.dodgeClock)/1000) * 100) / 100)+"/10 Seconds";
+    else
+    this.dodgeCD.text = "Dodge-Cooldown:10/10 Seconds";
 }
 
 myState.checkEnd = function(){
-    if(this.player.hp == 0){
-        this.endTF.text = "Game Over! You Died!";
-        this.endTF2.text = "Press SpaceBar to restart";
-        this.addChild(this.endTF);
+    if(this.player.hp <= 0){
+        this.endTF2.text = "Press C to restart";
+        this.addChild(this.gameO);
         this.addChild(this.endTF2);
-        this.boss.clock.pause();
+        this.boss.clock.stop();
         this.player.clock.pause();
         this.gameOver = true;
     }
-    else if(this.boss.hp == 0){
-        this.endTF.text = "Congratulations! You Won!";
-        this.endTF2.text = "Press SpaceBar to restart";
-        this.addChild(this.endTF);
+    else if(this.boss.hp <= 0){
+        this.endTF2.text = "Press C to restart";
+        this.addChild(this.gG);
         this.addChild(this.endTF2);
-        this.boss.clock.pause();
-        this.player.clock.pause();
+        this.boss.clock.stop();
+        this.player.clock.stop();
         this.gameOver = true;
     }
 }

@@ -11,7 +11,7 @@ var Player = function(state, atlas, x, y, weaponType){
     this.mid = new Kiwi.Geom.Point(this.x + this.width/2, this.y + this.height/2);
     this.dodged = false;
     this.attackable = true;
-    this.dodgeClock = Date.now()-2000;
+    this.dodgeClock = Date.now()-10000;
     this.actualTime = Date.now();
 
     this.attackHitbox = new Kiwi.Components.Box(this,0,30,30,30);
@@ -29,7 +29,7 @@ var Player = function(state, atlas, x, y, weaponType){
     //#endregion
     Player.prototype.wouldCollide = function(dx, dy){
         console.log((Kiwi.Utils.GameMath.radiansToDegrees(this.rotation)));
-        if(Kiwi.Geom.Point.distanceBetween(this.mid, state.boss.mid) < state.boss.height/2-20
+        if(Kiwi.Geom.Point.distanceBetween(this.mid, state.boss.mid) < state.boss.height/2-50
             && ((Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 90 && state.boss.mid.x > this.mid.x && Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x + 30, this.mid.y), state.boss.mid) < state.boss.height/2-40) 
             || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 180 && state.boss.mid.y > this.mid.y && Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x, this.mid.y + 30), state.boss.mid) < state.boss.height/2-40)
             || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 270 && state.boss.mid.x < this.mid.x && Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x - 30, this.mid.y), state.boss.mid) < state.boss.height/2-40) 
@@ -104,7 +104,7 @@ var Player = function(state, atlas, x, y, weaponType){
         );
 
         this.dodgeClock = Date.now();
-        var dodgeTimer = state.clock.createTimer( "dodgeCD", 2 );
+        var dodgeTimer = state.clock.createTimer( "dodgeCD", 10 );
         dodgeTimer.createTimerEvent( Kiwi.Time.TimerEvent.TIMER_STOP,
             function() {
                 console.log( "Dodge!" );
@@ -140,7 +140,7 @@ var Player = function(state, atlas, x, y, weaponType){
         }
         //#endregion
         //Check if Hit is being executed
-        if(!this.animation.getAnimation("hit").isPlaying && !this.animation.getAnimation("dodge").isPlaying){
+        if(!this.animation.getAnimation("hit").isPlaying && !this.animation.getAnimation("dodge").isPlaying && state.gameOver == false){
             //Down
             if(state.downKey.isDown && !state.leftKey.isDown && !state.rightKey.isDown && !state.upKey.isDown){
                 if(this.rotation != Kiwi.Utils.GameMath.degreesToRadians(180)){
@@ -242,7 +242,7 @@ var Player = function(state, atlas, x, y, weaponType){
             this.spacePressed = true;
             this.animation.stop();
             //Check if Enemy is hit
-            if(Kiwi.Geom.Point.distanceBetween(this.mid, state.boss.mid) < state.boss.height/2+20 
+            if(Kiwi.Geom.Point.distanceBetween(this.mid, state.boss.mid) < state.boss.height/3 
             && ((Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 90 && state.boss.mid.x > this.mid.x ) 
             || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 180 && state.boss.mid.y > this.mid.y )
             || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 270 && state.boss.mid.x < this.mid.x ) 
@@ -251,9 +251,25 @@ var Player = function(state, atlas, x, y, weaponType){
             || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 135 && state.boss.mid.y > this.mid.y && state.boss.mid.x > this.mid.x)
             || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 45 && state.boss.mid.y < this.mid.y && state.boss.mid.x > this.mid.x)
             || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 315 && state.boss.mid.y < this.mid.y && state.boss.mid.x < this.mid.x))){
-                console.log("collision");
-                state.boss.hp -= 250;
-                state.playerAttack.text = "-250";
+                var difference;
+                if(state.boss.angle - state.boss.rotation < 0)
+                    difference = 360 - Kiwi.Utils.GameMath.radiansToDegrees(state.boss.rotation) + state.boss.angle;
+                else
+                    difference = state.boss.angle - Kiwi.Utils.GameMath.radiansToDegrees(state.boss.rotation);
+                
+                if(difference < 0)
+                    difference = Math.sqrt(Math.pow(difference, 2));
+                if( difference < 22.5 && state.boss.special == true){
+                    console.log("collision");
+                    state.boss.hp -= 500;
+                    state.playerAttack.text = "-500!";
+                }
+                else{
+                    console.log("collision");
+                    state.boss.hp -= 250;
+                    state.playerAttack.text = "-250";
+                }
+               
                 var timer = state.clock.createTimer( "removeDMG", 0.4 );
                 timer.createTimerEvent( Kiwi.Time.TimerEvent.TIMER_STOP,
                     function() {
@@ -278,14 +294,14 @@ var Player = function(state, atlas, x, y, weaponType){
 
         //Check if Dodge is still pressed
         if(!this.cPressed && state.cKey.isDown && !this.animation.getAnimation("hit").isPlaying && !this.dodged
-            && !((state.boss.box.hitbox.containsPoint(new Kiwi.Geom.Point(this.mid.x,this.mid.y-75)) && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 0)
-            || (state.boss.box.hitbox.containsPoint(new Kiwi.Geom.Point(this.mid.x+75,this.mid.y-75)) && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 45)
-            || (state.boss.box.hitbox.containsPoint(new Kiwi.Geom.Point(this.mid.x+75,this.mid.y)) && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 90)
-            || (state.boss.box.hitbox.containsPoint(new Kiwi.Geom.Point(this.mid.x+75,this.mid.y+75)) && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 135)
-            || (state.boss.box.hitbox.containsPoint(new Kiwi.Geom.Point(this.mid.x,this.mid.y+75)) && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 180)
-            || (state.boss.box.hitbox.containsPoint(new Kiwi.Geom.Point(this.mid.x-75,this.mid.y+75)) && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 225)
-            || (state.boss.box.hitbox.containsPoint(new Kiwi.Geom.Point(this.mid.x-75,this.mid.y)) && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 270)
-            || (state.boss.box.hitbox.containsPoint(new Kiwi.Geom.Point(this.mid.x-75,this.mid.y-75)) && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 315))){
+            && !((Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x,this.mid.y-75), state.boss.mid) < state.boss.height/3 && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 0)
+            || (Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x+75,this.mid.y-75), state.boss.mid) < state.boss.height/3 && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 45)
+            || (Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x+75,this.mid.y), state.boss.mid) < state.boss.height/3 && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 90)
+            || (Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x+75,this.mid.y+75), state.boss.mid) < state.boss.height/3 && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 135)
+            || (Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x,this.mid.y+75), state.boss.mid) < state.boss.height/3 && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 180)
+            || (Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x-75,this.mid.y+75), state.boss.mid) < state.boss.height/3 && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 225)
+            || (Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x-75,this.mid.y), state.boss.mid) < state.boss.height/3 && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 270)
+            || (Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x-75,this.mid.y-75), state.boss.mid) < state.boss.height/3 && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 315))){
                 
                 this.cPressed = true;
                 this.dodge();

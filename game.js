@@ -22,7 +22,7 @@ myState.create = function(){
     this.player = new Player(this, this.textures.hammerSprite, 300, 300,2);
     this.player.animation.add("move", [0,1,2,3,4], 0.1, false);
     this.player.animation.add("hit", [5,6,7,8,9,10,11,12,13,14,15,16], 0.05, false);
-    this.player.animation.add("dodge", [16,17,18,19,20,21,16],0.03,false);
+    this.player.animation.add("dodge", [16,17,18,19,20,21,16],0.01,false);
 
     this.boss = new Boss(this, this.textures.boss, 500, 474);
     this.boss.animation.add("idle", [0], 0.1, false);
@@ -64,12 +64,12 @@ myState.create = function(){
     this.hpB.fontSize = 60;
     this.hpB.fontWeight = "bold";
 
-    this.endTF = new Kiwi.GameObjects.TextField(this, "",1920/2 - 400,1080/2, "#ffffff");
+    this.endTF = new Kiwi.GameObjects.TextField(this, "",1920/2 - 450,1080/2-100, "#ffffff");
     this.endTF.fontFamily = "Wt-Position Mono";
     this.endTF.fontSize = 120;
     this.endTF.fontWeight = "bold";
 
-    this.endTF2 = new Kiwi.GameObjects.TextField(this, "",1920/2 - 500,1080/2+120, "#ffffff");
+    this.endTF2 = new Kiwi.GameObjects.TextField(this, "",1920/2 - 550,1080/2+20, "#ffffff");
     this.endTF2.fontFamily = "Wt-Position Mono";
     this.endTF2.fontSize = 120;
     this.endTF2.fontWeight = "bold";

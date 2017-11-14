@@ -6,17 +6,25 @@ var Boss = function(state, atlas, x, y){
 
     this.actualTime = Date.now();
     this.lastSpecial = Date.now();
+
+    this.hp = 25000;
+    this.maxHP = 25000;
+
     this.specialHit = false;
-    this.mode = 0;
-    this.hp = 5000;
-    this.maxHP = 5000;
     this.relocate = true;
     this.special = false;
+
     this.actualRot;
     this.playerActPos;
     this.position;
     this.angle;
     this.mid = new Kiwi.Geom.Point(this.transform.x + this.width/2, this.transform.y + this.height/2);
+
+    this.specialCD;
+    if(state.mode == 1)
+        this.specialCD = 7500;
+    else
+        this.specialCD = 12500;
 
     Boss.prototype.attack = function(){
         var b = this;
@@ -37,9 +45,10 @@ var Boss = function(state, atlas, x, y){
 
                 console.log((Kiwi.Geom.Point.distanceBetween(b.mid, player.mid) <= b.height/2-30)+";"+difference+";"+b.animation.currentCell+";"+(player.hp == hpBefore));
 
-                if(Kiwi.Geom.Point.distanceBetween(b.mid, player.mid) <= b.height/2-30 && difference < 10 && player.hp == hpBefore){
+                if(Kiwi.Geom.Point.distanceBetween(b.mid, player.mid) <= b.height/2-30 && difference < 10 && player.hp == hpBefore && b.animation.currentCell == 4){
                     player.hp -= 20;
                     state.bossAttack.visible = true;
+                    state.logFileText += ("PH: Boss-Special :"+b.special+", Damage: 20 | Time:"+(state.milliSecondsToHMinSec(Date.now()-state.startTime))+" | BossP: ("+Math.floor(b.mid.x)+","+Math.floor(b.mid.y)+"); PlayerP:("+Math.floor(player.mid.x)+","+Math.floor(player.mid.y)+")\r\n");
                     var timer2 = state.clock.createTimer( "removeDMG", 0.5 );
                     timer2.createTimerEvent( Kiwi.Time.TimerEvent.TIMER_STOP,
                         function() {
@@ -76,7 +85,7 @@ var Boss = function(state, atlas, x, y){
                 timerExec.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP,
                     function(){
                         b.animation.play("discharge");
-                        var timer = state.clock.createTimer("stopSpecial", 0.55);
+                        var timer = state.clock.createTimer("stopSpecial", 0.5);
                         timer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP,
                             function(){
                                 b.specialHit = false;
@@ -107,8 +116,7 @@ var Boss = function(state, atlas, x, y){
         Kiwi.GameObjects.Sprite.prototype.update.call(this);
         this.actualTime = Date.now();
         var boss = this;
-        
-        if(this.actualTime-this.lastSpecial >= 7500){
+        if(this.actualTime-this.lastSpecial >= this.specialCD){
             this.special = true;
             this.specialMove();
         }
@@ -229,6 +237,7 @@ var Boss = function(state, atlas, x, y){
                                 state.bossAttack.text = "-50!";
                                 player.hp -= 50;
                                 state.bossAttack.visible = true;
+                                state.logFileText += ("PH: Boss-Special :"+b.special+", Damage: 50 | Time:"+(state.milliSecondsToHMinSec(Date.now()-state.startTime))+" | BossP: ("+Math.floor(b.mid.x)+","+Math.floor(b.mid.y)+"); PlayerP:("+Math.floor(player.mid.x)+","+Math.floor(player.mid.y)+")\r\n");
 
                                 var timer2 = state.clock.createTimer( "removeDMG", 0.5 );
                                 timer2.createTimerEvent( Kiwi.Time.TimerEvent.TIMER_STOP,

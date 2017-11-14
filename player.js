@@ -1,20 +1,17 @@
 var Player = function(state, atlas, x, y, weaponType){
     Kiwi.GameObjects.Sprite.call(this,state, atlas, x, y, [enableInput=false]);
 
-    this.box.hitbox = new Kiwi.Geom.Rectangle(0, 0, 40, 40 );    
-
-    this.maxHP = 100;
-    this.hp = 100;
-    this.facing = "up";
-    this.cPressed = false;
-    this.spacePressed = false;
-    this.mid = new Kiwi.Geom.Point(this.x + this.width/2, this.y + this.height/2);
-    this.dodged = false;
-    this.attackable = true;
     this.dodgeClock = Date.now()-10000;
     this.actualTime = Date.now();
 
-    this.attackHitbox = new Kiwi.Components.Box(this,0,30,30,30);
+    this.maxHP = 100;
+    this.hp = 100;
+
+    this.cPressed = false;
+    this.spacePressed = false;
+    this.dodged = false;
+
+    this.mid = new Kiwi.Geom.Point(this.x + this.width/2, this.y + this.height/2);
 
     //#region WeaponTypes
     //Longsword
@@ -166,7 +163,6 @@ var Player = function(state, atlas, x, y, weaponType){
             //Down-Right
             else if(state.downKey.isDown && !state.leftKey.isDown && state.rightKey.isDown && !state.upKey.isDown){
                 if(this.rotation != Kiwi.Utils.GameMath.degreesToRadians(135)){
-                    this.facing = "downright";
                     this.rotation = Kiwi.Utils.GameMath.degreesToRadians(135);
                 }
                 if(!this.wouldCollide(3, 3) && this.mid.y+3.0*this.movespeedfactor < 1080-this.height/2 && this.mid.x + 3.0*this.movespeedfactor < 1920-this.width/2){
@@ -242,15 +238,15 @@ var Player = function(state, atlas, x, y, weaponType){
             this.spacePressed = true;
             this.animation.stop();
             //Check if Enemy is hit
-            if(Kiwi.Geom.Point.distanceBetween(this.mid, state.boss.mid) < state.boss.height/3 
-            && ((Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 90 && state.boss.mid.x > this.mid.x ) 
-            || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 180 && state.boss.mid.y > this.mid.y )
-            || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 270 && state.boss.mid.x < this.mid.x ) 
-            || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 0 && state.boss.mid.y < this.mid.y )
-            || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 225 && state.boss.mid.y > this.mid.y && state.boss.mid.x < this.mid.x)
-            || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 135 && state.boss.mid.y > this.mid.y && state.boss.mid.x > this.mid.x)
-            || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 45 && state.boss.mid.y < this.mid.y && state.boss.mid.x > this.mid.x)
-            || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 315 && state.boss.mid.y < this.mid.y && state.boss.mid.x < this.mid.x))){
+            if(Kiwi.Geom.Point.distanceBetween(this.mid, state.boss.mid) < state.boss.height/3+20 
+                && ((Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 90 && state.boss.mid.x > this.mid.x ) 
+                    || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 180 && state.boss.mid.y > this.mid.y )
+                    || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 270 && state.boss.mid.x < this.mid.x ) 
+                    || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 0 && state.boss.mid.y < this.mid.y )
+                    || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 225 && state.boss.mid.y > this.mid.y && state.boss.mid.x < this.mid.x)
+                    || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 135 && state.boss.mid.y > this.mid.y && state.boss.mid.x > this.mid.x)
+                    || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 45 && state.boss.mid.y < this.mid.y && state.boss.mid.x > this.mid.x)
+                    || (Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 315 && state.boss.mid.y < this.mid.y && state.boss.mid.x < this.mid.x))){
                 var difference;
                 if(state.boss.angle - state.boss.rotation < 0)
                     difference = 360 - Kiwi.Utils.GameMath.radiansToDegrees(state.boss.rotation) + state.boss.angle;
@@ -263,11 +259,13 @@ var Player = function(state, atlas, x, y, weaponType){
                     console.log("collision");
                     state.boss.hp -= 500;
                     state.playerAttack.text = "-500!";
+                    state.logFileText += ("BH: Angle:"+Math.floor(difference)+", Boss-Special:"+state.boss.special+", Damage: 500 | Time:"+(state.milliSecondsToHMinSec(Date.now()-state.startTime))+" | BossP: ("+Math.floor(state.boss.mid.x)+","+Math.floor(state.boss.mid.y)+"); PlayerP:("+Math.floor(this.mid.x)+","+Math.floor(this.mid.y)+")\r\n");
                 }
                 else{
                     console.log("collision");
                     state.boss.hp -= 250;
                     state.playerAttack.text = "-250";
+                    state.logFileText += ("BH: Angle:"+Math.floor(difference)+", Boss-Special:"+state.boss.special+", Damage: 250 | Time:"+(state.milliSecondsToHMinSec(Date.now()-state.startTime))+" | BossP: ("+Math.floor(state.boss.mid.x)+","+Math.floor(state.boss.mid.y)+"); PlayerP:("+Math.floor(this.mid.x)+","+Math.floor(this.mid.y)+")\r\n");
                 }
                
                 var timer = state.clock.createTimer( "removeDMG", 0.4 );
@@ -295,13 +293,13 @@ var Player = function(state, atlas, x, y, weaponType){
         //Check if Dodge is still pressed
         if(!this.cPressed && state.cKey.isDown && !this.animation.getAnimation("hit").isPlaying && !this.dodged
             && !((Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x,this.mid.y-75), state.boss.mid) < state.boss.height/3 && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 0)
-            || (Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x+75,this.mid.y-75), state.boss.mid) < state.boss.height/3 && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 45)
-            || (Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x+75,this.mid.y), state.boss.mid) < state.boss.height/3 && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 90)
-            || (Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x+75,this.mid.y+75), state.boss.mid) < state.boss.height/3 && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 135)
-            || (Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x,this.mid.y+75), state.boss.mid) < state.boss.height/3 && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 180)
-            || (Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x-75,this.mid.y+75), state.boss.mid) < state.boss.height/3 && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 225)
-            || (Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x-75,this.mid.y), state.boss.mid) < state.boss.height/3 && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 270)
-            || (Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x-75,this.mid.y-75), state.boss.mid) < state.boss.height/3 && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 315))){
+                || (Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x+75,this.mid.y-75), state.boss.mid) < state.boss.height/3 && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 45)
+                || (Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x+75,this.mid.y), state.boss.mid) < state.boss.height/3 && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 90)
+                || (Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x+75,this.mid.y+75), state.boss.mid) < state.boss.height/3 && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 135)
+                || (Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x,this.mid.y+75), state.boss.mid) < state.boss.height/3 && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 180)
+                || (Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x-75,this.mid.y+75), state.boss.mid) < state.boss.height/3 && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 225)
+                || (Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x-75,this.mid.y), state.boss.mid) < state.boss.height/3 && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 270)
+                || (Kiwi.Geom.Point.distanceBetween(new Kiwi.Geom.Point(this.mid.x-75,this.mid.y-75), state.boss.mid) < state.boss.height/3 && Kiwi.Utils.GameMath.radiansToDegrees(this.rotation) == 315))){
                 
                 this.cPressed = true;
                 this.dodge();

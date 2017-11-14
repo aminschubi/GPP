@@ -9,6 +9,7 @@ myState.preload = function () {
     this.addImage("bg", "img/bg.png");
     this.addImage("gameOver", "img/go.png");
     this.addImage("gG", "img/gg.png");
+    this.mode = 1;
 }
 
 myState.create = function(){
@@ -16,6 +17,10 @@ myState.create = function(){
     this.game.stage.resize(1920,1080);
 
     this.clock = this.game.time.clock;
+
+    this.startTime = Date.now();
+    this.endTime;
+    this.logFileText = "";
 
     this.gameOver = false;
 
@@ -115,21 +120,88 @@ myState.updateHUD = function(){
 
 myState.checkEnd = function(){
     if(this.player.hp <= 0){
-        this.endTF2.text = "Press C to restart";
-        this.addChild(this.gameO);
-        this.addChild(this.endTF2);
-        this.boss.clock.stop();
-        this.player.clock.pause();
-        this.gameOver = true;
+        var game = this;
+        var timer = this.clock.createTimer("endGame", 0,5);
+        timer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP,
+            function(){
+                game.endTF2.text = "Press C to restart";
+                game.addChild(game.gameO);
+                game.addChild(game.endTF2);
+                game.boss.clock.stop();
+                game.player.clock.stop();
+                game.gameOver = true;
+                game.clock.removeTimer(timer);
+                game.endTime = Date.now();
+                var outcome = ("Mode: "+game.mode+" (Mode 1: More Specials, Mode 2: Less Specials)\r\nOutcome: Loss \r\nTime: " + game.milliSecondsToHMinSec(game.endTime - game.startTime) + "\r\nRemaining Boss-HP: "+game.boss.hp+"\r\n");
+                var endFile = outcome + game.logFileText;
+                game.download("GPP_Log.txt", endFile);
+                if(game.mode == 1)
+                    game.mode = 2;
+                else
+                    game.mode = 1;
+                game.logFileText = "";
+            }
+        );
+        
     }
     else if(this.boss.hp <= 0){
-        this.endTF2.text = "Press C to restart";
-        this.addChild(this.gG);
-        this.addChild(this.endTF2);
-        this.boss.clock.stop();
-        this.player.clock.stop();
-        this.gameOver = true;
+        var game = this;
+        var timer = this.clock.createTimer("endGame", 0,5);
+        timer.createTimerEvent(Kiwi.Time.TimerEvent.TIMER_STOP,
+            function(){
+                game.endTF2.text = "Press C to restart";
+                game.addChild(game.gG);
+                game.addChild(game.endTF2);
+                game.boss.clock.stop();
+                game.player.clock.stop();
+                game.gameOver = true;
+                game.clock.removeTimer(timer);
+                game.endTime = Date.now();
+                var outcome = ("Mode: "+game.mode+" (Mode 1: More Specials, Mode 2: Less Specials)\r\nOutcome: Win \r\nTime: " + game.milliSecondsToHMinSec(game.endTime - game.startTime) + "\r\nRemaining Player-HP: "+game.player.hp+"\r\n");
+                var endFile = outcome + game.logFileText;
+                game.download("GPP_Log.txt", endFile);
+                if(game.mode == 1)
+                    game.mode = 2;
+                else
+                    game.mode = 1;
+                game.logFileText = "";
+            }
+        );
     }
+}
+
+myState.download = function(filename, text) {
+    var pom = document.createElement('a');
+    pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    pom.setAttribute('download', filename);
+
+    if (document.createEvent) {
+        var event = document.createEvent('MouseEvents');
+        event.initEvent('click', true, true);
+        pom.dispatchEvent(event);
+    }
+    else {
+        pom.click();
+    }
+}
+
+myState.milliSecondsToHMinSec = function(millisec) {
+    var seconds = (millisec / 1000).toFixed(0);
+    var minutes = Math.floor(seconds / 60);
+    var hours = "";
+    if (minutes > 59) {
+        hours = Math.floor(minutes / 60);
+        hours = (hours >= 10) ? hours : "0" + hours;
+        minutes = minutes - (hours * 60);
+        minutes = (minutes >= 10) ? minutes : "0" + minutes;
+    }
+
+    seconds = Math.floor(seconds % 60);
+    seconds = (seconds >= 10) ? seconds : "0" + seconds;
+    if (hours != "") {
+        return hours + ":" + minutes + ":" + seconds;
+    }
+    return minutes + ":" + seconds;
 }
 
 myState.calcRotationPoint = function(){

@@ -229,11 +229,11 @@ var Boss = function(state, atlas, x, y){
                 if(difference < 0)
                     difference = Math.sqrt(Math.pow(difference, 2));
                 console.log(difference + "," + Kiwi.Geom.Point.distanceBetween(this.mid, player.mid));
-                if( difference > 30 && Kiwi.Geom.Point.distanceBetween(this.mid, player.mid) < this.height/1.25 - 20){
+                if( difference > 30 && Kiwi.Geom.Point.distanceBetween(this.mid, player.mid) < this.height/1.25 - 10){
                     var timer = state.clock.createTimer( "removeDMG", 0.25 );
                     timer.createTimerEvent( Kiwi.Time.TimerEvent.TIMER_STOP,
                         function() {
-                            if( difference > 30 && Kiwi.Geom.Point.distanceBetween(b.mid, player.mid) < b.height/1.25 - 20){
+                            if( difference > 30 && Kiwi.Geom.Point.distanceBetween(b.mid, player.mid) < b.height/1.25 - 10){
                                 state.bossAttack.text = "-50!";
                                 player.hp -= 50;
                                 state.bossAttack.visible = true;

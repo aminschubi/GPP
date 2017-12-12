@@ -68,18 +68,18 @@ myState.create = function(){
 
     this.dodgeCD = new Kiwi.GameObjects.TextField(this, "",20,60, "#ffffff");
     this.dodgeCD.fontFamily = "Courier New";
-    this.dodgeCD.fontSize = 60;
+    this.dodgeCD.fontSize = 40;
     this.dodgeCD.fontWeight = "bold";
     this.dodgeCD.text = "Dodge-Cooldown:2/2 Seconds";
 
     this.hpP = new Kiwi.GameObjects.TextField(this, "",20,20, "#ffffff");
     this.hpP.fontFamily = "Courier New";
-    this.hpP.fontSize = 60;
+    this.hpP.fontSize = 40;
     this.hpP.fontWeight = "bold";
 
     this.hpB = new Kiwi.GameObjects.TextField(this, "",1920/2 - 200,20, "#c5f7f0");
     this.hpB.fontFamily = "Courier New";
-    this.hpB.fontSize = 60;
+    this.hpB.fontSize = 40;
     this.hpB.fontWeight = "bold";
 
     this.endTF2 = new Kiwi.GameObjects.TextField(this, "",1920/2 - 450,1080/2+400, "#ffffff");

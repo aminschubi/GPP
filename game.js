@@ -9,6 +9,8 @@ myState.preload = function () {
     this.addImage("bg", "img/bg.png");
     this.addImage("gameOver", "img/go.png");
     this.addImage("gG", "img/gg.png");
+    this.addImage("rageBar", "img/rageBar.png");
+    this.addImage("rageBorder", "img/rageBorder.png");
     this.mode = 1;
 }
 
@@ -27,6 +29,8 @@ myState.create = function(){
     this.bg = new Kiwi.GameObjects.Sprite(this, this.textures.bg, 0,0);
     this.gameO = new Kiwi.GameObjects.Sprite(this, this.textures.gameOver, 0,0);
     this.gG = new Kiwi.GameObjects.Sprite(this, this.textures.gG, 0,0);
+    this.rageBar = new Kiwi.GameObjects.Sprite(this, this.textures.rageBar, 0,0);
+    this.rageBorder = new Kiwi.GameObjects.Sprite(this, this.textures.rageBorder, 0,0);
 
     this.player = new Player(this, this.textures.hammerSprite, 300, 300,2);
     this.player.transform.scale = 0.75;
